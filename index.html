@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>国試マップ</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+h1 { text-align: center; }
+
+.tabs, .genre-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tab, .genre-tab {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.active, .genre-tab.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#grid-container {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.cell {
+  aspect-ratio: 1/1;
+  min-width: 50px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.star-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 進捗バー */
+.progress-container {
+  width: 100%;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: #4CAF50;
+}
+.progress-text {
+  text-align: right;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* ダブルタップ・長押し拡大防止 */
+html, body {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -ms-touch-action: manipulation;
+}
+</style>
+</head>
+<body>
+
+<h1>国試マップ</h1>
+
+<!-- 年度タブ -->
+<div class="tabs">
+  <div class="tab active">111回</div>
+  <div class="tab">110回</div>
+  <div class="tab">109回</div>
+  <div class="tab">108回</div>
+  <div class="tab">107回</div>
+  <div class="tab">106回</div>
+  <div class="tab">105回</div>
+  <div class="tab">104回</div>
+</div>
+
+<!-- 年度進捗バー -->
+<div class="progress-container" id="yearProgressContainer">
+  <div class="progress-bar" id="yearProgressBar"></div>
+</div>
+<p class="progress-text" id="yearProgressText"></p>
+
+<!-- ジャンルタブ -->
+<div class="genre-tabs">
+  <div class="genre-tab active" data-genre="hisshu">必須問題</div>
+  <div class="genre-tab" data-genre="riron">理論問題</div>
+  <div class="genre-tab" data-genre="jissen">実践問題</div>
+</div>
+
+<!-- ジャンル進捗バー -->
+<div class="progress-container" id="genreProgressContainer">
+  <div class="progress-bar" id="genreProgressBar"></div>
+</div>
+<p class="progress-text" id="genreProgressText"></p>
+
+<!-- グリッド表示 -->
+<div id="grid-container">
+  <div class="grid" id="hisshu"></div>
+  <div class="grid" id="riron" style="display:none"></div>
+  <div class="grid" id="jissen" style="display:none"></div>
+</div>
+
+<script>
+// ダブルタップ拡大防止
+let lastTouch = 0;
+document.addEventListener('touchend', function (e) {
+  const now = Date.now();
+  if (now - lastTouch <= 300) { 
+    e.preventDefault();
+  }
+  lastTouch = now;
+}, { passive: false });
+
+const tabs = document.querySelectorAll(".tab");
+const genreTabs = document.querySelectorAll(".genre-tab");
+const grids = document.querySelectorAll(".grid");
+
+let currentYear = "111";
+
+const genreRanges = {
+  hisshu: [1, 90],
+  riron: [91, 195],
+  jissen: [196, 345]
+};
+
+// 年度タブ切替
+tabs.forEach(tab => {
+  tab.addEventListener("click", function() {
+    tabs.forEach(t => t.classList.remove("active"));
+    this.classList.add("active");
+    currentYear = this.textContent.replace("回","");
+    loadYear(currentYear);
+    updateYearProgress(currentYear);
+    const activeGenre = document.querySelector(".genre-tab.active").dataset.genre;
+    updateGenreProgress(currentYear, activeGenre);
+  });
+});
+
+// ジャンルタブ切替
+genreTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    genreTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const genre = tab.dataset.genre;
+    grids.forEach(g => g.style.display = (g.id === genre) ? "grid" : "none");
+    updateGenreProgress(currentYear, genre);
+  });
+});
+
+// マス生成
+function loadYear(year) {
+  const genres = ["hisshu","riron","jissen"];
+  genres.forEach(genre => {
+    const grid = document.getElementById(genre);
+    grid.innerHTML = "";
+    const storageKey = "kokushi_"+year+"_"+genre;
+    let savedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    const start = genreRanges[genre][0];
+    const end = genreRanges[genre][1];
+
+    for(let i=start; i<=end; i++){
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.textContent = i;
+
+      let count = savedData[i]?.count || 0;
+      let starred = savedData[i]?.starred || false;
+
+      const starBtn = document.createElement("div");
+      starBtn.classList.add("star-btn");
+      starBtn.textContent = starred ? "⭐":"☆";
+      starBtn.addEventListener("click",(e)=>{
+        e.stopPropagation();
+        starred = !starred;
+        starBtn.textContent = starred ? "⭐":"☆";
+        savedData[i] = {count, starred};
+        localStorage.setItem(storageKey,JSON.stringify(savedData));
+        updateYearProgress(currentYear);
+        updateGenreProgress(currentYear, genre);
+      });
+      cell.appendChild(starBtn);
+
+      const updateColor = ()=>{
+        if(count===1) cell.style.backgroundColor="#c8e6c9";
+        else if(count===2) cell.style.backgroundColor="#81c784";
+        else if(count>=3) cell.style.backgroundColor="#388e3c";
+        else cell.style.backgroundColor="white";
+      }
+      updateColor();
+
+      cell.addEventListener("click",()=>{
+        count++;
+        if(count>3) count=0;
+        savedData[i] = {count, starred};
+        localStorage.setItem(storageKey,JSON.stringify(savedData));
+        updateColor();
+        updateYearProgress(currentYear);
+        updateGenreProgress(currentYear, genre);
+      });
+
+      grid.appendChild(cell);
+    }
+  });
+}
+
+// 進捗更新
+function updateYearProgress(year){
+  let totalSolved = 0;
+  const genres = ["hisshu","riron","jissen"];
+  genres.forEach(genre => {
+    const key = "kokushi_"+year+"_"+genre;
+    const data = JSON.parse(localStorage.getItem(key)) || [];
+    totalSolved += data.filter(d => d && d.count>0).length;
+  });
+  const percent = Math.floor(totalSolved/345*100);
+  document.getElementById("yearProgressBar").style.width = percent+"%";
+  document.getElementById("yearProgressText").textContent = percent+"% 完了 ("+totalSolved+"/345)";
+}
+
+function updateGenreProgress(year, genre){
+  const key = "kokushi_"+year+"_"+genre;
+  const data = JSON.parse(localStorage.getItem(key)) || [];
+  const solvedCount = data.filter(d => d && d.count>0).length;
+  const start = genreRanges[genre][0];
+  const end = genreRanges[genre][1];
+  const total = end-start+1;
+  const percent = Math.floor(solvedCount/total*100);
+  document.getElementById("genreProgressBar").style.width = percent+"%";
+  document.getElementById("genreProgressText").textContent = percent+"% 完了 ("+solvedCount+"/"+total+")";
+}
+
+loadYear(currentYear);
+updateYearProgress(currentYear);
+updateGenreProgress(currentYear, "hisshu");
+</script>
+
+</body>
+</html>
