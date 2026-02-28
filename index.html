@@ -8,96 +8,30 @@
 <!-- ホーム画面表示名（iOS） -->
 <meta name="apple-mobile-web-app-title" content="進捗マップ">
 
-<!-- iOS ホーム画面アイコン（絶対 URL） -->
-<link rel="apple-touch-icon" sizes="180x180" href="https://ellie8341.github.io/kokushi-map/icon-180.png">
-<link rel="apple-touch-icon" sizes="152x152" href="https://ellie8341.github.io/kokushi-map/icon-152.png">
-<link rel="apple-touch-icon" sizes="120x120" href="https://ellie8341.github.io/kokushi-map/icon-120.png">
+<!-- iOS ホーム画面アイコン（v2、絶対URL） -->
+<link rel="apple-touch-icon" sizes="180x180" href="https://ellie8341.github.io/kokushi-map/icon-180-v2.png">
+<link rel="apple-touch-icon" sizes="152x152" href="https://ellie8341.github.io/kokushi-map/icon-152-v2.png">
+<link rel="apple-touch-icon" sizes="120x120" href="https://ellie8341.github.io/kokushi-map/icon-120-v2.png">
 
 <style>
-body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 10px;
-  background-color: #f5f5f5;
-}
+body { font-family: sans-serif; margin: 0; padding: 10px; background-color: #f5f5f5; }
 h1 { text-align: center; }
 
-.tabs, .genre-tabs {
-  display: flex;
-  overflow-x: auto;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.tab, .genre-tab {
-  padding: 8px 12px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.tab.active, .genre-tab.active {
-  background-color: #4CAF50;
-  color: white;
-}
+.tabs, .genre-tabs { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 10px; }
+.tab, .genre-tab { padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; white-space: nowrap; }
+.tab.active, .genre-tab.active { background-color: #4CAF50; color: white; }
 
-#grid-container {
-  width: 100%;
-}
+#grid-container { width: 100%; }
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
+.cell { aspect-ratio: 1/1; min-width: 50px; font-size: 16px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #ccc; border-radius: 4px; -webkit-user-select: none; user-select: none; }
+.star-btn { position: absolute; bottom: 2px; right: 2px; font-size: 16px; cursor: pointer; }
 
-.cell {
-  aspect-ratio: 1/1;
-  min-width: 50px;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.star-btn {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  font-size: 16px;
-  cursor: pointer;
-}
+.progress-container { width: 100%; height: 20px; background-color: #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
+.progress-bar { height: 100%; width: 0%; background-color: #4CAF50; }
+.progress-text { text-align: right; font-size: 14px; margin-bottom: 10px; }
 
-/* 進捗バー */
-.progress-container {
-  width: 100%;
-  height: 20px;
-  background-color: #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 5px;
-}
-.progress-bar {
-  height: 100%;
-  width: 0%;
-  background-color: #4CAF50;
-}
-.progress-text {
-  text-align: right;
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-/* ダブルタップ・長押し拡大防止 */
-html, body {
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  -ms-touch-action: manipulation;
-}
+html, body { touch-action: manipulation; -webkit-user-select: none; -ms-touch-action: manipulation; }
 </style>
 </head>
 <body>
@@ -145,11 +79,9 @@ html, body {
 <script>
 // ダブルタップ拡大防止
 let lastTouch = 0;
-document.addEventListener('touchend', function (e) {
+document.addEventListener('touchend', function(e){
   const now = Date.now();
-  if (now - lastTouch <= 300) { 
-    e.preventDefault();
-  }
+  if(now - lastTouch <= 300) e.preventDefault();
   lastTouch = now;
 }, { passive: false });
 
@@ -158,12 +90,7 @@ const genreTabs = document.querySelectorAll(".genre-tab");
 const grids = document.querySelectorAll(".grid");
 
 let currentYear = "111";
-
-const genreRanges = {
-  hisshu: [1, 90],
-  riron: [91, 195],
-  jissen: [196, 345]
-};
+const genreRanges = { hisshu:[1,90], riron:[91,195], jissen:[196,345] };
 
 // 年度タブ切替
 tabs.forEach(tab => {
@@ -184,24 +111,22 @@ genreTabs.forEach(tab => {
     genreTabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     const genre = tab.dataset.genre;
-    grids.forEach(g => g.style.display = (g.id === genre) ? "grid" : "none");
+    grids.forEach(g => g.style.display = (g.id===genre)?"grid":"none");
     updateGenreProgress(currentYear, genre);
   });
 });
 
 // マス生成
-function loadYear(year) {
+function loadYear(year){
   const genres = ["hisshu","riron","jissen"];
-  genres.forEach(genre => {
+  genres.forEach(genre=>{
     const grid = document.getElementById(genre);
-    grid.innerHTML = "";
+    grid.innerHTML="";
     const storageKey = "kokushi_"+year+"_"+genre;
     let savedData = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-    const start = genreRanges[genre][0];
-    const end = genreRanges[genre][1];
-
-    for(let i=start; i<=end; i++){
+    const [start,end] = genreRanges[genre];
+    for(let i=start;i<=end;i++){
       const cell = document.createElement("div");
       cell.classList.add("cell");
       cell.textContent = i;
@@ -212,14 +137,14 @@ function loadYear(year) {
       const starBtn = document.createElement("div");
       starBtn.classList.add("star-btn");
       starBtn.textContent = starred ? "⭐":"☆";
-      starBtn.addEventListener("click",(e)=>{
+      starBtn.addEventListener("click", e=>{
         e.stopPropagation();
         starred = !starred;
         starBtn.textContent = starred ? "⭐":"☆";
-        savedData[i] = {count, starred};
+        savedData[i]={count,starred};
         localStorage.setItem(storageKey,JSON.stringify(savedData));
         updateYearProgress(currentYear);
-        updateGenreProgress(currentYear, genre);
+        updateGenreProgress(currentYear,genre);
       });
       cell.appendChild(starBtn);
 
@@ -228,17 +153,17 @@ function loadYear(year) {
         else if(count===2) cell.style.backgroundColor="#81c784";
         else if(count>=3) cell.style.backgroundColor="#388e3c";
         else cell.style.backgroundColor="white";
-      }
+      };
       updateColor();
 
-      cell.addEventListener("click",()=>{
+      cell.addEventListener("click", ()=>{
         count++;
         if(count>3) count=0;
-        savedData[i] = {count, starred};
+        savedData[i]={count,starred};
         localStorage.setItem(storageKey,JSON.stringify(savedData));
         updateColor();
         updateYearProgress(currentYear);
-        updateGenreProgress(currentYear, genre);
+        updateGenreProgress(currentYear,genre);
       });
 
       grid.appendChild(cell);
@@ -248,33 +173,30 @@ function loadYear(year) {
 
 // 進捗更新
 function updateYearProgress(year){
-  let totalSolved = 0;
-  const genres = ["hisshu","riron","jissen"];
-  genres.forEach(genre => {
-    const key = "kokushi_"+year+"_"+genre;
-    const data = JSON.parse(localStorage.getItem(key)) || [];
-    totalSolved += data.filter(d => d && d.count>0).length;
+  let totalSolved=0;
+  const genres=["hisshu","riron","jissen"];
+  genres.forEach(g=>{
+    const data=JSON.parse(localStorage.getItem("kokushi_"+year+"_"+g))||[];
+    totalSolved+=data.filter(d=>d && d.count>0).length;
   });
-  const percent = Math.floor(totalSolved/345*100);
-  document.getElementById("yearProgressBar").style.width = percent+"%";
-  document.getElementById("yearProgressText").textContent = percent+"% 完了 ("+totalSolved+"/345)";
+  const percent=Math.floor(totalSolved/345*100);
+  document.getElementById("yearProgressBar").style.width=percent+"%";
+  document.getElementById("yearProgressText").textContent=percent+"% 完了 ("+totalSolved+"/345)";
 }
 
-function updateGenreProgress(year, genre){
-  const key = "kokushi_"+year+"_"+genre;
-  const data = JSON.parse(localStorage.getItem(key)) || [];
-  const solvedCount = data.filter(d => d && d.count>0).length;
-  const start = genreRanges[genre][0];
-  const end = genreRanges[genre][1];
-  const total = end-start+1;
-  const percent = Math.floor(solvedCount/total*100);
-  document.getElementById("genreProgressBar").style.width = percent+"%";
-  document.getElementById("genreProgressText").textContent = percent+"% 完了 ("+solvedCount+"/"+total+")";
+function updateGenreProgress(year,genre){
+  const data=JSON.parse(localStorage.getItem("kokushi_"+year+"_"+genre))||[];
+  const solvedCount=data.filter(d=>d && d.count>0).length;
+  const [start,end]=genreRanges[genre];
+  const total=end-start+1;
+  const percent=Math.floor(solvedCount/total*100);
+  document.getElementById("genreProgressBar").style.width=percent+"%";
+  document.getElementById("genreProgressText").textContent=percent+"% 完了 ("+solvedCount+"/"+total+")";
 }
 
 loadYear(currentYear);
 updateYearProgress(currentYear);
-updateGenreProgress(currentYear, "hisshu");
+updateGenreProgress(currentYear,"hisshu");
 </script>
 
 </body>
