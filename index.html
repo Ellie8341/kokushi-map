@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="進捗マップ">
 
 <link rel="apple-touch-icon" sizes="180x180" href="https://ellie8341.github.io/kokushi-map/icon-180-v2.png">
-<link rel="apple-touch-icon" sizes="152x152" href="https://ellie8341.github.io/kokushi-map/icon-152-v2.png">
-<link rel="apple-touch-icon" sizes="120x120" href="https://ellie8341.github.io/kokushi-map/icon-120-v2.png">
 
 <style>
 body { font-family: sans-serif; margin: 0; padding: 10px; background-color: #f5f5f5; padding-bottom:70px; }
@@ -19,17 +17,14 @@ h1 { text-align: center; }
 .tab, .genre-tab { padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; white-space: nowrap; }
 .tab.active, .genre-tab.active { background-color: #4CAF50; color: white; }
 
-#grid-container { width: 100%; }
 .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-
-.cell { aspect-ratio: 1/1; min-width: 50px; font-size: 16px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #ccc; border-radius: 4px; }
+.cell { aspect-ratio: 1/1; min-width: 50px; font-size: 16px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #ccc; border-radius: 4px; user-select:none; }
 .star-btn { position: absolute; bottom: 2px; right: 2px; font-size: 16px; cursor: pointer; }
 
 .progress-container { width: 100%; height: 20px; background-color: #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
 .progress-bar { height: 100%; width: 0%; background-color: #4CAF50; }
 .progress-text { text-align: right; font-size: 14px; margin-bottom: 10px; }
 
-/* ===== 今週ページ ===== */
 #page-week{
   display:none;
   background:white;
@@ -47,7 +42,6 @@ h1 { text-align: center; }
   margin-top:20px;
 }
 
-/* ===== 下タブ ===== */
 #bottom-tabs{
   position:fixed;
   bottom:0;
@@ -78,11 +72,9 @@ h1 { text-align: center; }
 
 <div class="tabs">
   <div class="tab active">111回</div>
-  <div class="tab">110回</div>
-  <div class="tab">109回</div>
 </div>
 
-<div class="progress-container">
+<div class="progress-container" id="yearProgressContainer">
   <div class="progress-bar" id="yearProgressBar"></div>
 </div>
 <p class="progress-text" id="yearProgressText"></p>
@@ -93,7 +85,7 @@ h1 { text-align: center; }
   <div class="genre-tab" data-genre="jissen">実践問題</div>
 </div>
 
-<div class="progress-container">
+<div class="progress-container" id="genreProgressContainer">
   <div class="progress-bar" id="genreProgressBar"></div>
 </div>
 <p class="progress-text" id="genreProgressText"></p>
@@ -104,16 +96,14 @@ h1 { text-align: center; }
   <div class="grid" id="jissen" style="display:none"></div>
 </div>
 
-<!-- ===== 今週の成果ページ ===== -->
 <div id="page-week">
   <h2 style="text-align:center;">今週の成果</h2>
   <div id="histogram"></div>
   <button id="shareBtn" style="display:block;margin:20px auto;padding:10px 20px;font-size:16px;">
-  画像を保存してシェア
+    画像を保存してシェア
   </button>
 </div>
 
-<!-- ===== 下タブ ===== -->
 <div id="bottom-tabs">
   <div class="bottom-tab active" data-page="progress">過去問進捗</div>
   <div class="bottom-tab" data-page="week">今週の成果</div>
@@ -123,19 +113,71 @@ h1 { text-align: center; }
 
 <script>
 const genreRanges = { hisshu:[1,90], riron:[91,195], jissen:[196,345] };
-let currentYear = "111";
+let currentYear="111";
 
-// ===== 今週管理 =====
-function getTodayIndex(){
-  const day=new Date().getDay();
-  return (day===0)?6:day-1;
+function loadYear(year){
+  ["hisshu","riron","jissen"].forEach(genre=>{
+    const grid=document.getElementById(genre);
+    grid.innerHTML="";
+    const storageKey="kokushi_"+year+"_"+genre;
+    let savedData=JSON.parse(localStorage.getItem(storageKey))||[];
+    const [start,end]=genreRanges[genre];
+
+    for(let i=start;i<=end;i++){
+      const cell=document.createElement("div");
+      cell.classList.add("cell");
+      cell.textContent=i;
+
+      let count=savedData[i]?.count||0;
+      let starred=savedData[i]?.starred||false;
+
+      const starBtn=document.createElement("div");
+      starBtn.classList.add("star-btn");
+      starBtn.textContent=starred?"⭐":"☆";
+
+      starBtn.addEventListener("click",e=>{
+        e.stopPropagation();
+        starred=!starred;
+        starBtn.textContent=starred?"⭐":"☆";
+        savedData[i]={count,starred};
+        localStorage.setItem(storageKey,JSON.stringify(savedData));
+      });
+
+      const updateColor=()=>{
+        if(count===1) cell.style.backgroundColor="#c8e6c9";
+        else if(count===2) cell.style.backgroundColor="#81c784";
+        else if(count>=3) cell.style.backgroundColor="#388e3c";
+        else cell.style.backgroundColor="white";
+      };
+      updateColor();
+
+      cell.addEventListener("click",()=>{
+        count++;
+        if(count>3) count=0;
+        savedData[i]={count,starred};
+        localStorage.setItem(storageKey,JSON.stringify(savedData));
+        updateColor();
+        incrementTodayCount();
+      });
+
+      cell.appendChild(starBtn);
+      grid.appendChild(cell);
+    }
+  });
 }
+
+function getTodayIndex(){
+  const d=new Date().getDay();
+  return d===0?6:d-1;
+}
+
 function getWeekKey(){
   const now=new Date();
   const year=now.getFullYear();
   const week=Math.ceil((now - new Date(year,0,1))/86400000/7);
   return "week_"+year+"_"+week;
 }
+
 function incrementTodayCount(){
   const key=getWeekKey();
   let data=JSON.parse(localStorage.getItem(key))||[0,0,0,0,0,0,0];
@@ -143,17 +185,15 @@ function incrementTodayCount(){
   localStorage.setItem(key,JSON.stringify(data));
 }
 
-// ===== ヒストグラム描画 =====
 function renderHistogram(){
   const container=document.getElementById("histogram");
   container.innerHTML="";
   const key=getWeekKey();
   const data=JSON.parse(localStorage.getItem(key))||[0,0,0,0,0,0,0];
-
   const colors=["red","orange","yellow","green","deepskyblue","blue","purple"];
   const labels=["月","火","水","木","金","土","日"];
 
-  data.forEach((value,index)=>{
+  data.forEach((value,i)=>{
     const wrapper=document.createElement("div");
     wrapper.style.display="flex";
     wrapper.style.flexDirection="column";
@@ -162,10 +202,10 @@ function renderHistogram(){
     const bar=document.createElement("div");
     bar.style.height=(value*15)+"px";
     bar.style.width="30px";
-    bar.style.backgroundColor=colors[index];
+    bar.style.backgroundColor=colors[i];
 
     const label=document.createElement("span");
-    label.textContent=labels[index];
+    label.textContent=labels[i];
 
     wrapper.appendChild(bar);
     wrapper.appendChild(label);
@@ -173,7 +213,6 @@ function renderHistogram(){
   });
 }
 
-// ===== 下タブ切替 =====
 document.querySelectorAll(".bottom-tab").forEach(tab=>{
   tab.addEventListener("click",()=>{
     document.querySelectorAll(".bottom-tab").forEach(t=>t.classList.remove("active"));
@@ -181,15 +220,12 @@ document.querySelectorAll(".bottom-tab").forEach(tab=>{
 
     const page=tab.dataset.page;
     document.getElementById("grid-container").style.display=(page==="progress")?"block":"none";
-    document.querySelector(".tabs").style.display=(page==="progress")?"flex":"none";
-    document.querySelector(".genre-tabs").style.display=(page==="progress")?"flex":"none";
     document.getElementById("page-week").style.display=(page==="week")?"block":"none";
 
     if(page==="week") renderHistogram();
   });
 });
 
-// ===== 画像共有 =====
 document.getElementById("shareBtn").addEventListener("click",async()=>{
   const element=document.getElementById("page-week");
   const canvas=await html2canvas(element,{backgroundColor:"#ffffff",scale:2});
@@ -198,7 +234,7 @@ document.getElementById("shareBtn").addEventListener("click",async()=>{
   if(navigator.share){
     const blob=await (await fetch(dataUrl)).blob();
     const file=new File([blob],"今週の成果.png",{type:"image/png"});
-    navigator.share({ files:[file], title:"今週の成果", text:"今週もがんばりました🌈" });
+    navigator.share({files:[file],title:"今週の成果",text:"今週もがんばりました🌈"});
   }else{
     const link=document.createElement("a");
     link.download="今週の成果.png";
@@ -206,6 +242,8 @@ document.getElementById("shareBtn").addEventListener("click",async()=>{
     link.click();
   }
 });
+
+loadYear(currentYear);
 </script>
 
 </body>
