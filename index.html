@@ -36,6 +36,7 @@ body { padding-bottom: 60px; }
 
 <h1>進捗マップ</h1>
 
+<div id="progress-page">
 <div class="tabs">
 <div class="tab active">111回</div>
 <div class="tab">110回</div>
@@ -67,6 +68,8 @@ body { padding-bottom: 60px; }
 <div class="grid" id="hisshu"></div>
 <div class="grid" id="riron" style="display:none"></div>
 <div class="grid" id="jissen" style="display:none"></div>
+</div>
+
 </div>
 
 <div id="bottom-tabs">
@@ -215,7 +218,7 @@ updateYearProgress(currentYear);
 updateGenreProgress(currentYear,"hisshu");
 
 const bottomTabs=document.querySelectorAll(".bottom-tab");
-const mainContent=document.getElementById("grid-container");
+const mainContent=document.getElementById("progress-page");
 const weeklyPage=document.getElementById("weekly-page");
 
 bottomTabs.forEach(tab=>{
