@@ -1,250 +1,405 @@
 <!DOCTYPE html>
+
 <html lang="ja">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
 <title>進捗マップ</title>
+
+
+
+<!-- ホーム画面表示名（iOS） -->
 
 <meta name="apple-mobile-web-app-title" content="進捗マップ">
 
+
+
+<!-- iOS ホーム画面アイコン（v2、絶対URL） -->
+
 <link rel="apple-touch-icon" sizes="180x180" href="https://ellie8341.github.io/kokushi-map/icon-180-v2.png">
 
+<link rel="apple-touch-icon" sizes="152x152" href="https://ellie8341.github.io/kokushi-map/icon-152-v2.png">
+
+<link rel="apple-touch-icon" sizes="120x120" href="https://ellie8341.github.io/kokushi-map/icon-120-v2.png">
+
+
+
 <style>
-body { font-family: sans-serif; margin: 0; padding: 10px; background-color: #f5f5f5; padding-bottom:70px; }
+
+body { font-family: sans-serif; margin: 0; padding: 10px; background-color: #f5f5f5; }
+
 h1 { text-align: center; }
 
+
+
 .tabs, .genre-tabs { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 10px; }
+
 .tab, .genre-tab { padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; white-space: nowrap; }
+
 .tab.active, .genre-tab.active { background-color: #4CAF50; color: white; }
 
+
+
+#grid-container { width: 100%; }
+
 .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.cell { aspect-ratio: 1/1; min-width: 50px; font-size: 16px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #ccc; border-radius: 4px; user-select:none; }
+
+
+
+.cell { aspect-ratio: 1/1; min-width: 50px; font-size: 16px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #ccc; border-radius: 4px; -webkit-user-select: none; user-select: none; }
+
 .star-btn { position: absolute; bottom: 2px; right: 2px; font-size: 16px; cursor: pointer; }
 
+
+
 .progress-container { width: 100%; height: 20px; background-color: #ddd; border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
+
 .progress-bar { height: 100%; width: 0%; background-color: #4CAF50; }
+
 .progress-text { text-align: right; font-size: 14px; margin-bottom: 10px; }
 
-#page-week{
-  display:none;
-  background:white;
-  padding:20px;
-  border-radius:16px;
-  margin-top:10px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
 
-#histogram{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-around;
-  height:200px;
-  margin-top:20px;
-}
 
-#bottom-tabs{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  display:flex;
-  background:white;
-  border-top:1px solid #ccc;
-}
+html, body { touch-action: manipulation; -webkit-user-select: none; -ms-touch-action: manipulation; }
 
-.bottom-tab{
-  flex:1;
-  text-align:center;
-  padding:12px 0;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.bottom-tab.active{
-  background:#4CAF50;
-  color:white;
-}
 </style>
+
 </head>
+
 <body>
+
+
 
 <h1>進捗マップ</h1>
 
+
+
+<!-- 年度タブ -->
+
 <div class="tabs">
+
   <div class="tab active">111回</div>
+
+  <div class="tab">110回</div>
+
+  <div class="tab">109回</div>
+
+  <div class="tab">108回</div>
+
+  <div class="tab">107回</div>
+
+  <div class="tab">106回</div>
+
+  <div class="tab">105回</div>
+
+  <div class="tab">104回</div>
+
 </div>
+
+
+
+<!-- 年度進捗バー -->
 
 <div class="progress-container" id="yearProgressContainer">
+
   <div class="progress-bar" id="yearProgressBar"></div>
+
 </div>
+
 <p class="progress-text" id="yearProgressText"></p>
 
+
+
+<!-- ジャンルタブ -->
+
 <div class="genre-tabs">
+
   <div class="genre-tab active" data-genre="hisshu">必須問題</div>
+
   <div class="genre-tab" data-genre="riron">理論問題</div>
+
   <div class="genre-tab" data-genre="jissen">実践問題</div>
+
 </div>
+
+
+
+<!-- ジャンル進捗バー -->
 
 <div class="progress-container" id="genreProgressContainer">
+
   <div class="progress-bar" id="genreProgressBar"></div>
+
 </div>
+
 <p class="progress-text" id="genreProgressText"></p>
 
+
+
+<!-- グリッド表示 -->
+
 <div id="grid-container">
+
   <div class="grid" id="hisshu"></div>
+
   <div class="grid" id="riron" style="display:none"></div>
+
   <div class="grid" id="jissen" style="display:none"></div>
+
 </div>
 
-<div id="page-week">
-  <h2 style="text-align:center;">今週の成果</h2>
-  <div id="histogram"></div>
-  <button id="shareBtn" style="display:block;margin:20px auto;padding:10px 20px;font-size:16px;">
-    画像を保存してシェア
-  </button>
-</div>
 
-<div id="bottom-tabs">
-  <div class="bottom-tab active" data-page="progress">過去問進捗</div>
-  <div class="bottom-tab" data-page="week">今週の成果</div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
+
+// ダブルタップ拡大防止
+
+let lastTouch = 0;
+
+document.addEventListener('touchend', function(e){
+
+  const now = Date.now();
+
+  if(now - lastTouch <= 300) e.preventDefault();
+
+  lastTouch = now;
+
+}, { passive: false });
+
+
+
+const tabs = document.querySelectorAll(".tab");
+
+const genreTabs = document.querySelectorAll(".genre-tab");
+
+const grids = document.querySelectorAll(".grid");
+
+
+
+let currentYear = "111";
+
 const genreRanges = { hisshu:[1,90], riron:[91,195], jissen:[196,345] };
-let currentYear="111";
+
+
+
+// 年度タブ切替
+
+tabs.forEach(tab => {
+
+  tab.addEventListener("click", function() {
+
+    tabs.forEach(t => t.classList.remove("active"));
+
+    this.classList.add("active");
+
+    currentYear = this.textContent.replace("回","");
+
+    loadYear(currentYear);
+
+    updateYearProgress(currentYear);
+
+    const activeGenre = document.querySelector(".genre-tab.active").dataset.genre;
+
+    updateGenreProgress(currentYear, activeGenre);
+
+  });
+
+});
+
+
+
+// ジャンルタブ切替
+
+genreTabs.forEach(tab => {
+
+  tab.addEventListener("click", () => {
+
+    genreTabs.forEach(t => t.classList.remove("active"));
+
+    tab.classList.add("active");
+
+    const genre = tab.dataset.genre;
+
+    grids.forEach(g => g.style.display = (g.id===genre)?"grid":"none");
+
+    updateGenreProgress(currentYear, genre);
+
+  });
+
+});
+
+
+
+// マス生成
 
 function loadYear(year){
-  ["hisshu","riron","jissen"].forEach(genre=>{
-    const grid=document.getElementById(genre);
+
+  const genres = ["hisshu","riron","jissen"];
+
+  genres.forEach(genre=>{
+
+    const grid = document.getElementById(genre);
+
     grid.innerHTML="";
-    const storageKey="kokushi_"+year+"_"+genre;
-    let savedData=JSON.parse(localStorage.getItem(storageKey))||[];
-    const [start,end]=genreRanges[genre];
+
+    const storageKey = "kokushi_"+year+"_"+genre;
+
+    let savedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+
+
+    const [start,end] = genreRanges[genre];
 
     for(let i=start;i<=end;i++){
-      const cell=document.createElement("div");
+
+      const cell = document.createElement("div");
+
       cell.classList.add("cell");
-      cell.textContent=i;
 
-      let count=savedData[i]?.count||0;
-      let starred=savedData[i]?.starred||false;
+      cell.textContent = i;
 
-      const starBtn=document.createElement("div");
+
+
+      let count = savedData[i]?.count || 0;
+
+      let starred = savedData[i]?.starred || false;
+
+
+
+      const starBtn = document.createElement("div");
+
       starBtn.classList.add("star-btn");
-      starBtn.textContent=starred?"⭐":"☆";
 
-      starBtn.addEventListener("click",e=>{
+      starBtn.textContent = starred ? "⭐":"☆";
+
+      starBtn.addEventListener("click", e=>{
+
         e.stopPropagation();
-        starred=!starred;
-        starBtn.textContent=starred?"⭐":"☆";
-        savedData[i]={count,starred};
-        localStorage.setItem(storageKey,JSON.stringify(savedData));
-      });
 
-      const updateColor=()=>{
-        if(count===1) cell.style.backgroundColor="#c8e6c9";
-        else if(count===2) cell.style.backgroundColor="#81c784";
-        else if(count>=3) cell.style.backgroundColor="#388e3c";
-        else cell.style.backgroundColor="white";
-      };
-      updateColor();
+        starred = !starred;
 
-      cell.addEventListener("click",()=>{
-        count++;
-        if(count>3) count=0;
+        starBtn.textContent = starred ? "⭐":"☆";
+
         savedData[i]={count,starred};
+
         localStorage.setItem(storageKey,JSON.stringify(savedData));
-        updateColor();
-        incrementTodayCount();
+
+        updateYearProgress(currentYear);
+
+        updateGenreProgress(currentYear,genre);
+
       });
 
       cell.appendChild(starBtn);
+
+
+
+      const updateColor = ()=>{
+
+        if(count===1) cell.style.backgroundColor="#c8e6c9";
+
+        else if(count===2) cell.style.backgroundColor="#81c784";
+
+        else if(count>=3) cell.style.backgroundColor="#388e3c";
+
+        else cell.style.backgroundColor="white";
+
+      };
+
+      updateColor();
+
+
+
+      cell.addEventListener("click", ()=>{
+
+        count++;
+
+        if(count>3) count=0;
+
+        savedData[i]={count,starred};
+
+        localStorage.setItem(storageKey,JSON.stringify(savedData));
+
+        updateColor();
+
+        updateYearProgress(currentYear);
+
+        updateGenreProgress(currentYear,genre);
+
+      });
+
+
+
       grid.appendChild(cell);
+
     }
+
   });
+
 }
 
-function getTodayIndex(){
-  const d=new Date().getDay();
-  return d===0?6:d-1;
-}
 
-function getWeekKey(){
-  const now=new Date();
-  const year=now.getFullYear();
-  const week=Math.ceil((now - new Date(year,0,1))/86400000/7);
-  return "week_"+year+"_"+week;
-}
 
-function incrementTodayCount(){
-  const key=getWeekKey();
-  let data=JSON.parse(localStorage.getItem(key))||[0,0,0,0,0,0,0];
-  data[getTodayIndex()]++;
-  localStorage.setItem(key,JSON.stringify(data));
-}
+// 進捗更新
 
-function renderHistogram(){
-  const container=document.getElementById("histogram");
-  container.innerHTML="";
-  const key=getWeekKey();
-  const data=JSON.parse(localStorage.getItem(key))||[0,0,0,0,0,0,0];
-  const colors=["red","orange","yellow","green","deepskyblue","blue","purple"];
-  const labels=["月","火","水","木","金","土","日"];
+function updateYearProgress(year){
 
-  data.forEach((value,i)=>{
-    const wrapper=document.createElement("div");
-    wrapper.style.display="flex";
-    wrapper.style.flexDirection="column";
-    wrapper.style.alignItems="center";
+  let totalSolved=0;
 
-    const bar=document.createElement("div");
-    bar.style.height=(value*15)+"px";
-    bar.style.width="30px";
-    bar.style.backgroundColor=colors[i];
+  const genres=["hisshu","riron","jissen"];
 
-    const label=document.createElement("span");
-    label.textContent=labels[i];
+  genres.forEach(g=>{
 
-    wrapper.appendChild(bar);
-    wrapper.appendChild(label);
-    container.appendChild(wrapper);
+    const data=JSON.parse(localStorage.getItem("kokushi_"+year+"_"+g))||[];
+
+    totalSolved+=data.filter(d=>d && d.count>0).length;
+
   });
+
+  const percent=Math.floor(totalSolved/345*100);
+
+  document.getElementById("yearProgressBar").style.width=percent+"%";
+
+  document.getElementById("yearProgressText").textContent=percent+"% 完了 ("+totalSolved+"/345)";
+
 }
 
-document.querySelectorAll(".bottom-tab").forEach(tab=>{
-  tab.addEventListener("click",()=>{
-    document.querySelectorAll(".bottom-tab").forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
 
-    const page=tab.dataset.page;
-    document.getElementById("grid-container").style.display=(page==="progress")?"block":"none";
-    document.getElementById("page-week").style.display=(page==="week")?"block":"none";
 
-    if(page==="week") renderHistogram();
-  });
-});
+function updateGenreProgress(year,genre){
 
-document.getElementById("shareBtn").addEventListener("click",async()=>{
-  const element=document.getElementById("page-week");
-  const canvas=await html2canvas(element,{backgroundColor:"#ffffff",scale:2});
-  const dataUrl=canvas.toDataURL("image/png");
+  const data=JSON.parse(localStorage.getItem("kokushi_"+year+"_"+genre))||[];
 
-  if(navigator.share){
-    const blob=await (await fetch(dataUrl)).blob();
-    const file=new File([blob],"今週の成果.png",{type:"image/png"});
-    navigator.share({files:[file],title:"今週の成果",text:"今週もがんばりました🌈"});
-  }else{
-    const link=document.createElement("a");
-    link.download="今週の成果.png";
-    link.href=dataUrl;
-    link.click();
-  }
-});
+  const solvedCount=data.filter(d=>d && d.count>0).length;
+
+  const [start,end]=genreRanges[genre];
+
+  const total=end-start+1;
+
+  const percent=Math.floor(solvedCount/total*100);
+
+  document.getElementById("genreProgressBar").style.width=percent+"%";
+
+  document.getElementById("genreProgressText").textContent=percent+"% 完了 ("+solvedCount+"/"+total+")";
+
+}
+
+
 
 loadYear(currentYear);
+
+updateYearProgress(currentYear);
+
+updateGenreProgress(currentYear,"hisshu");
+
 </script>
 
+
+
 </body>
+
 </html>
