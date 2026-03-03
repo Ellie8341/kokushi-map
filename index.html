@@ -173,7 +173,12 @@ function loadYear(year){
         const today=new Date().toISOString().split("T")[0];
         if(!savedData[i]) savedData[i]={count:0,starred:false,dates:[]};
         if(!savedData[i].dates) savedData[i].dates=[];
-        savedData[i].dates.push(today);
+        if(count ===0){
+            savedData[i].dates = [];
+        }else if{
+            savedData[i] .dates.push(today);
+        }
+
         savedData[i].count=count;
         savedData[i].starred=starred;
         localStorage.setItem(storageKey,JSON.stringify(savedData));
