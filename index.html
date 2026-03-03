@@ -66,6 +66,39 @@ h1 { text-align: center; }
 
 html, body { touch-action: manipulation; -webkit-user-select: none; -ms-touch-action: manipulation; }
 
+/* ===== 下タブ ===== */
+#bottom-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  border-top: 1px solid #ccc;
+  background: white;
+}
+
+.bottom-tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  cursor: pointer;
+  border-right: 1px solid #ccc;
+}
+
+.bottom-tab:last-child {
+  border-right: none;
+}
+
+.bottom-tab.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* 下タブ分の余白確保 */
+body {
+  padding-bottom: 60px;
+}
+
 </style>
 
 </head>
@@ -152,7 +185,17 @@ html, body { touch-action: manipulation; -webkit-user-select: none; -ms-touch-ac
 
 </div>
 
+<!-- ===== 下タブ切替 ===== -->
+<div id="bottom-tabs">
+  <div class="bottom-tab active" data-page="progress">過去問進捗</div>
+  <div class="bottom-tab" data-page="weekly">今週の成果</div>
+</div>
 
+<!-- 今週の成果ページ（最初は非表示） -->
+<div id="weekly-page" style="display:none; padding:15px;">
+  <h2>今週の成果</h2>
+  <p>ここに今週の学習記録を表示予定</p>
+</div>
 
 <script>
 
@@ -395,6 +438,28 @@ loadYear(currentYear);
 updateYearProgress(currentYear);
 
 updateGenreProgress(currentYear,"hisshu");
+
+// ===== 下タブ切替処理 =====
+const bottomTabs = document.querySelectorAll(".bottom-tab");
+const mainContent = document.getElementById("grid-container");
+const weeklyPage = document.getElementById("weekly-page");
+
+bottomTabs.forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    bottomTabs.forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+
+    const page = tab.dataset.page;
+
+    if(page === "progress"){
+      mainContent.style.display = "block";
+      weeklyPage.style.display = "none";
+    }else{
+      mainContent.style.display = "none";
+      weeklyPage.style.display = "block";
+    }
+  });
+});
 
 </script>
 
