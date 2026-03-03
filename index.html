@@ -194,7 +194,7 @@ body {
 <!-- 今週の成果ページ（最初は非表示） -->
 <div id="weekly-page" style="display:none; padding:15px;">
   <h2>今週の成果</h2>
-  <p>ここに今週の学習記録を表示予定</p>
+  <canvas id="weeklyChart" height="200"></canvas>
 </div>
 
 <script>
@@ -357,23 +357,30 @@ function loadYear(year){
 
 
 
-      cell.addEventListener("click", ()=>{
+cell.addEventListener("click", ()=>{
+  count++;
+  if(count>3) count=0;
 
-        count++;
+  // ===== 今日の日付取得 =====
+  const today = new Date().toISOString().split("T")[0];
 
-        if(count>3) count=0;
+  // date配列がなければ作る
+  if(!savedData[i]) savedData[i] = { count:0, starred:false, dates:[] };
+  if(!savedData[i].dates) savedData[i].dates = [];
 
-        savedData[i]={count,starred};
+  // 1クリック=1問解いた扱い
+  savedData[i].dates.push(today);
 
-        localStorage.setItem(storageKey,JSON.stringify(savedData));
+  savedData[i].count = count;
+  savedData[i].starred = starred;
 
-        updateColor();
+  localStorage.setItem(storageKey,JSON.stringify(savedData));
 
-        updateYearProgress(currentYear);
-
-        updateGenreProgress(currentYear,genre);
-
-      });
+  updateColor();
+  updateYearProgress(currentYear);
+  updateGenreProgress(currentYear,genre);
+  updateWeeklyChart(); // ← ★追加
+});
 
 
 
@@ -382,7 +389,6 @@ function loadYear(year){
     }
 
   });
-
 }
 
 
@@ -461,9 +467,88 @@ bottomTabs.forEach(tab=>{
   });
 });
 
+// ===== 今週ヒストグラム =====
+let weeklyChart;
+
+function getMonday(date){
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function updateWeeklyChart(){
+
+  const today = new Date();
+  const monday = getMonday(today);
+  const weekDates = [];
+
+  for(let i=0;i<7;i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    weekDates.push(d.toISOString().split("T")[0]);
+  }
+
+  const counts = [0,0,0,0,0,0,0];
+
+  const genres=["hisshu","riron","jissen"];
+
+  genres.forEach(g=>{
+    const data=JSON.parse(localStorage.getItem("kokushi_"+currentYear+"_"+g))||[];
+    data.forEach(item=>{
+      if(item && item.dates){
+        item.dates.forEach(date=>{
+          const index = weekDates.indexOf(date);
+          if(index !== -1) counts[index]++;
+        });
+      }
+    });
+  });
+
+  const ctx = document.getElementById("weeklyChart").getContext("2d");
+
+  if(weeklyChart) weeklyChart.destroy();
+
+  weeklyChart = new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:["月","火","水","木","金","土","日"],
+      datasets:[{
+        data:counts,
+        backgroundColor:[
+          "red",
+          "yellow",
+          "orange",
+          "green",
+          "skyblue",
+          "blue",
+          "purple"
+        ]
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false}
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          precision:0
+        }
+      }
+    }
+  });
+}
+
+// 初回描画
+updateWeeklyChart();
+
 </script>
 
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 
