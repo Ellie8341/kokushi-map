@@ -338,92 +338,59 @@ updateWeeklyChart();
 const shareBtn = document.getElementById("shareBtn");
 
 shareBtn.addEventListener("click", () => {
-  const chartCanvas = document.getElementById("weeklyChart");
 
-  // 新しいキャンバス作成
-  const exportCanvas = document.createElement("canvas");
-  const ctx = exportCanvas.getContext("2d");
-
-const shareBtn = document.getElementById("shareBtn");
-
-shareBtn.addEventListener("click", () => {
   const chartCanvas = document.getElementById("weeklyChart");
 
   const exportCanvas = document.createElement("canvas");
   const ctx = exportCanvas.getContext("2d");
 
-  const padding = 80; // ← 余白
-  const titleSpace = 140;
-  const footerSpace = 80;
+  const padding = 80;
+  const headerHeight = 160;
+  const footerHeight = 80;
 
   const width = chartCanvas.width + padding * 2;
-  const height = chartCanvas.height + padding * 2 + titleSpace;
+  const height = chartCanvas.height + padding * 2 + headerHeight + footerHeight;
 
   exportCanvas.width = width;
   exportCanvas.height = height;
 
-  // 白背景
+  // ===== 背景 =====
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
 
-  // 緑フレーム
-  ctx.strokeStyle = "#A5D6A7";
-  ctx.lineWidth = 250; // 枠の太さ
-  ctx.strokeRect(0, 0, width, height);
+  // ===== 上部ヘッダー =====
+  ctx.fillStyle = "#A5D6A7";   // 淡い緑
+  ctx.fillRect(0, 0, width, headerHeight);
 
-  // タイトル
+  // ===== タイトル =====
   ctx.fillStyle = "white";
   ctx.font = "bold 70px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("今週の成果🌈", width / 2, 100);
+  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 20);
 
-  // 少し小さく描画（スケール）
+  // ===== グラフ描画 =====
   const scale = 0.85;
   const chartWidth = chartCanvas.width * scale;
   const chartHeight = chartCanvas.height * scale;
 
   const x = (width - chartWidth) / 2;
-  const y = titleSpace + 100;
+  const y = headerHeight + padding;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
-  // フッター文字
-  ctx.fillStyle = "white";
-  ctx.font = "16px sans-serif";
-  ctx.textAlign = "center";
+  // ===== フッター =====
+  ctx.fillStyle = "#999";  // グレー
+  ctx.font = "20px sans-serif";
   ctx.fillText("Study Progress", width / 2, height - 30);
 
+  // ===== 保存 =====
   const imageURL = exportCanvas.toDataURL("image/png");
 
   const link = document.createElement("a");
   link.href = imageURL;
   link.download = "weekly_progress.png";
   link.click();
-});
 
-  exportCanvas.width = width;
-  exportCanvas.height = height;
-
-  // 白背景
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, width, height);
-
-  // タイトル描画
-  ctx.fillStyle = "#4CAF50";
-  ctx.font = "bold 28px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("今週の成果🌈", width / 2, 50);
-
-  // グラフ描画
-  ctx.drawImage(chartCanvas, 0, 100);
-
-  // PNG化
-  const imageURL = exportCanvas.toDataURL("image/png");
-
-  const link = document.createElement("a");
-  link.href = imageURL;
-  link.download = "weekly_progress.png";
-  link.click();
 });
 
 </script>
