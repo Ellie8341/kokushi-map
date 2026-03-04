@@ -359,14 +359,14 @@ shareBtn.addEventListener("click", () => {
   ctx.fillRect(0, 0, width, height);
 
   // ===== 上部ヘッダー =====
-  ctx.fillStyle = "#A5D6A7";   // 淡い緑
+  ctx.fillStyle = "#4CAF50";
   ctx.fillRect(0, 0, width, headerHeight);
 
   // ===== タイトル =====
   ctx.fillStyle = "white";
   ctx.font = "bold 70px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 20);
+  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 22);
 
   // ===== グラフ描画 =====
   const scale = 0.85;
@@ -379,7 +379,7 @@ shareBtn.addEventListener("click", () => {
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
   // ===== フッター =====
-  ctx.fillStyle = "#999";  // グレー
+  ctx.fillStyle = "4CAF50";
   ctx.font = "20px sans-serif";
   ctx.fillText("Study Progress", width / 2, height - 30);
 
