@@ -76,8 +76,24 @@ body { padding-bottom: 60px; }
 </div>
 
 <div id="weekly-page" style="display:none; padding:15px;">
-<h2>今週の成果</h2>
+<h2>今週の成果🌈</h2>
 <canvas id="weeklyChart" height="200"></canvas>
+
+<button id="shareBtn"
+style="
+margin-top:15px;
+padding:12px;
+width:100%;
+background-color:#4CAF50;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;">
+友達に共有する
+</button>
+
 </div>
 
 <!-- Chart.js 先に読み込む -->
@@ -299,6 +315,44 @@ scales:{y:{beginAtZero:true,ticks:{precision:0}}}
 }
 
 updateWeeklyChart();
+
+const shareBtn = document.getElementById("shareBtn");
+
+shareBtn.addEventListener("click", () => {
+  const chartCanvas = document.getElementById("weeklyChart");
+
+  // 新しいキャンバス作成
+  const exportCanvas = document.createElement("canvas");
+  const ctx = exportCanvas.getContext("2d");
+
+  const width = chartCanvas.width;
+  const height = chartCanvas.height + 100;
+
+  exportCanvas.width = width;
+  exportCanvas.height = height;
+
+  // 白背景
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, width, height);
+
+  // タイトル描画
+  ctx.fillStyle = "#4CAF50";
+  ctx.font = "bold 28px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("今週の成果🌈", width / 2, 50);
+
+  // グラフ描画
+  ctx.drawImage(chartCanvas, 0, 100);
+
+  // PNG化
+  const imageURL = exportCanvas.toDataURL("image/png");
+
+  const link = document.createElement("a");
+  link.href = imageURL;
+  link.download = "weekly_progress.png";
+  link.click();
+});
+
 </script>
 </body>
 </html>
