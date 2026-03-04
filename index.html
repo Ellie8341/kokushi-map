@@ -374,14 +374,14 @@ shareBtn.addEventListener("click", () => {
   const chartHeight = chartCanvas.height * scale;
 
   const x = (width - chartWidth) / 2;
-  const y = headerHeight + padding + 30;
+  const y = headerHeight + padding + 40;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
   // ===== フッター =====
   ctx.fillStyle = "#4CAF50";
   ctx.font = "20px sans-serif";
-  ctx.fillText("Study Progress", width / 2, height - 30);
+  ctx.fillText("Study Progress - https://ellie8341.github.io/kokushi-map/", width / 2, height - 30);
 
   // ===== 保存 =====
   const imageURL = exportCanvas.toDataURL("image/png");
