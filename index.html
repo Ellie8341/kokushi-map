@@ -354,6 +354,7 @@ shareBtn.addEventListener("click", () => {
 
   const padding = 80; // ← 余白
   const titleSpace = 140;
+  const footerSpace = 80;
 
   const width = chartCanvas.width + padding * 2;
   const height = chartCanvas.height + padding * 2 + titleSpace;
@@ -380,6 +381,12 @@ shareBtn.addEventListener("click", () => {
   const y = titleSpace;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
+
+  // フッター文字（小さめ・グレー）
+  ctx.fillStyle = "#999999";
+  ctx.font = "16px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Study Progress", width / 2, height - 30);
 
   const imageURL = exportCanvas.toDataURL("image/png");
 
