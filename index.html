@@ -368,7 +368,7 @@ shareBtn.addEventListener("click", () => {
 
   // 緑フレーム
   ctx.strokeStyle = "#4CAF50";
-  ctx.lineWidth = 12; // 枠の太さ
+  ctx.lineWidth = 30; // 枠の太さ
   ctx.strokeRect(0, 0, width, height);
 
   // タイトル（黒・大きく）
@@ -383,7 +383,7 @@ shareBtn.addEventListener("click", () => {
   const chartHeight = chartCanvas.height * scale;
 
   const x = (width - chartWidth) / 2;
-  const y = titleSpace + 30;
+  const y = titleSpace + 80;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
