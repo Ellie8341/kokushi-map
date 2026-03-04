@@ -386,11 +386,26 @@ shareBtn.addEventListener("click", () => {
   // ===== 保存 =====
   const imageURL = exportCanvas.toDataURL("image/png");
 
-  const link = document.createElement("a");
-  link.href = imageURL;
-  link.download = "weekly_progress.png";
-  link.click();
+exportCanvas.toBlob(async (blob) => {
 
+  const file = new File([blob], "weekly_progress.png", { type: "image/png" });
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "🌈今週の成果🌈",
+        text: "今週の勉強成果です！一緒に頑張ろう🔥",
+        url: "https://ellie8341.github.io/kokushi-map/",
+        files: [file]
+      });
+    } catch (err) {
+      console.log("共有キャンセル");
+    }
+  } else {
+    alert("この端末では共有機能が使えません");
+  }
+
+});
 });
 
 </script>
