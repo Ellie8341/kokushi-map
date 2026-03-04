@@ -366,7 +366,7 @@ shareBtn.addEventListener("click", () => {
   ctx.fillStyle = "white";
   ctx.font = "bold 70px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 22);
+  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 24);
 
   // ===== グラフ描画 =====
   const scale = 0.85;
@@ -374,12 +374,12 @@ shareBtn.addEventListener("click", () => {
   const chartHeight = chartCanvas.height * scale;
 
   const x = (width - chartWidth) / 2;
-  const y = headerHeight + padding;
+  const y = headerHeight + padding + 30;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
   // ===== フッター =====
-  ctx.fillStyle = "4CAF50";
+  ctx.fillStyle = "#4CAF50";
   ctx.font = "20px sans-serif";
   ctx.fillText("Study Progress", width / 2, height - 30);
 
