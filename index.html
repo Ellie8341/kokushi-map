@@ -366,7 +366,7 @@ shareBtn.addEventListener("click", () => {
   ctx.fillStyle = "white";
   ctx.font = "bold 70px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("今週の成果🌈", width / 2, headerHeight / 2 + 24);
+  ctx.fillText("🌈今週の成果🌈", width / 2, headerHeight / 2 + 26);
 
   // ===== グラフ描画 =====
   const scale = 0.85;
@@ -374,7 +374,7 @@ shareBtn.addEventListener("click", () => {
   const chartHeight = chartCanvas.height * scale;
 
   const x = (width - chartWidth) / 2;
-  const y = headerHeight + padding + 40;
+  const y = headerHeight + padding + 50;
 
   ctx.drawImage(chartCanvas, x, y, chartWidth, chartHeight);
 
