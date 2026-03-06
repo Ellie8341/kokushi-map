@@ -35,6 +35,12 @@ body { padding-bottom: 60px; }
 <body>
 
 <div id="progress-page">
+<div style="margin-bottom:10px; text-align:center;">
+<label style="font-size:14px;">解いた日：</label>
+<input type="date" id="studyDate"
+style="font-size:16px;padding:5px;border-radius:6px;border:1px solid #ccc;">
+</div>
+
 <div class="tabs">
 <div class="tab active">111回</div>
 <div class="tab">110回</div>
@@ -194,11 +200,15 @@ cell.addEventListener("click",()=>{
 count++;
 if(count>3) count=0;
 
+let today = document.getElementById("studyDate").value;
+
+if(!today){
 const now = new Date();
-const today =
+today =
   now.getFullYear() + "-" +
   String(now.getMonth() + 1).padStart(2, "0") + "-" +
   String(now.getDate()).padStart(2, "0");
+}
 
 if(!savedData[i]) savedData[i]={count:0,starred:false,dates:[]};
 if(!savedData[i].dates) savedData[i].dates=[];
@@ -394,6 +404,9 @@ percent + "% 完了 (" + allTotal + "/" + totalQuestions + ")";
 }
 
 updateWeeklyChart();
+document.getElementById("studyDate").value =
+new Date().toISOString().split("T")[0];
+
 
 const shareBtn = document.getElementById("shareBtn");
 
