@@ -79,6 +79,20 @@ body { padding-bottom: 60px; }
 <h2>今週の成果🌈</h2>
 <canvas id="weeklyChart" height="200"></canvas>
 
+<div id="weeklySummary" style="margin-top:20px; text-align:center;">
+
+<p id="weeklyTotal" style="font-size:18px; margin:5px 0;"></p>
+<p id="allTotal" style="font-size:18px; margin:5px 0;"></p>
+
+<div style="margin-top:10px;">
+<div style="background:#ddd;height:16px;border-radius:8px;overflow:hidden;">
+<div id="allProgressBar" style="height:100%;width:0%;background:#4CAF50;"></div>
+</div>
+<p id="allProgressText" style="font-size:14px;margin-top:5px;"></p>
+</div>
+
+</div>
+
 <button id="shareBtn"
 style="
 margin-top:15px;
@@ -340,6 +354,43 @@ scales:{
 }
 }
 });
+// ===== 今週合計 =====
+const weeklyTotal = counts.reduce((a,b)=>a+b,0);
+document.getElementById("weeklyTotal").textContent =
+"今週解いた合計: " + weeklyTotal + "問";
+
+
+// ===== これまでの合計 =====
+let allTotal = 0;
+
+years.forEach(year=>{
+  ["hisshu","riron","jissen"].forEach(g=>{
+
+    const data = JSON.parse(localStorage.getItem("kokushi_"+year+"_"+g)) || [];
+
+    data.forEach(item=>{
+      if(item && item.count>0){
+        allTotal++;
+      }
+    });
+
+  });
+});
+
+document.getElementById("allTotal").textContent =
+"これまでに解いた合計: " + allTotal + "問";
+
+
+// ===== 全体進捗バー =====
+const totalQuestions = 345 * 8; //111〜104回
+const percent = Math.floor(allTotal / totalQuestions * 100);
+
+document.getElementById("allProgressBar").style.width =
+percent + "%";
+
+document.getElementById("allProgressText").textContent =
+percent + "% 完了 (" + allTotal + "/" + totalQuestions + ")";
+
 }
 
 updateWeeklyChart();
