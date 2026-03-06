@@ -282,16 +282,25 @@ d.setDate(monday.getDate()+i);
 
 const counts=[0,0,0,0,0,0,0];
 
-["hisshu","riron","jissen"].forEach(g=>{
-const data=JSON.parse(localStorage.getItem("kokushi_"+currentYear+"_"+g))||[];
-data.forEach(item=>{
-if(item&&item.count>0&&item.dates){
-item.dates.forEach(date=>{
-const index=weekDates.indexOf(date);
-if(index!==-1) counts[index]++;
-});
-}
-});
+const years = ["111","110","109","108","107","106","105","104"];
+
+years.forEach(year=>{
+  ["hisshu","riron","jissen"].forEach(g=>{
+
+    const data = JSON.parse(localStorage.getItem("kokushi_"+year+"_"+g)) || [];
+
+    data.forEach(item=>{
+      if(item && item.count>0 && item.dates){
+
+        item.dates.forEach(date=>{
+          const index = weekDates.indexOf(date);
+          if(index !== -1) counts[index]++;
+        });
+
+      }
+    });
+
+  });
 });
 
 const ctx=document.getElementById("weeklyChart").getContext("2d");
